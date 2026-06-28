@@ -52,7 +52,7 @@ resizeCanvas
 // ================= CREATEUR =================
 
 
-const creatorName = "NHA CREATION";
+const creatorName = "HARRY_ARISTOTE CREATION";
 
 
 
