@@ -1,13 +1,61 @@
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-canvas.width = 400;
-canvas.height = 600;
+
+// ================= RESOLUTION ADAPTATIVE =================
+
+
+let GAME_WIDTH = 400;
+let GAME_HEIGHT = 600;
+
+
+function resizeCanvas(){
+
+    let ratio = GAME_WIDTH / GAME_HEIGHT;
+
+    let screenWidth = window.innerWidth;
+    let screenHeight = window.innerHeight;
+
+
+    if(screenWidth / screenHeight > ratio){
+
+        canvas.height = screenHeight;
+        canvas.width = screenHeight * ratio;
+
+    }else{
+
+        canvas.width = screenWidth;
+        canvas.height = screenWidth / ratio;
+
+    }
+
+
+    canvas.style.width = canvas.width + "px";
+    canvas.style.height = canvas.height + "px";
+
+
+}
+
+
+
+resizeCanvas();
+
+
+window.addEventListener(
+"resize",
+resizeCanvas
+);
+
+
 
 
 // ================= CREATEUR =================
 
-const creatorName = "HARRY ARISTOTE CREATION";
+
+const creatorName = "HARRY_ARISTOTE CREATION";
+
+
+
 
 
 // ================= IMAGES =================
@@ -21,24 +69,54 @@ const nightBackground = new Image();
 nightBackground.src = "images/background_night.png";
 
 
+
 const birdImage = new Image();
 birdImage.src = "images/bird.png";
+
 
 
 const pipeGreen = new Image();
 pipeGreen.src = "images/pipe-green.png";
 
 
+
 const pipeRed = new Image();
 pipeRed.src = "images/pipe-red.png";
+
 
 
 const coinImage = new Image();
 coinImage.src = "images/coin.png";
 
 
+
 const baseImage = new Image();
 baseImage.src = "images/base.png";
+
+
+
+
+
+
+
+// ================= ECHELLE =================
+
+
+function scaleX(value){
+
+    return value * canvas.width / GAME_WIDTH;
+
+}
+
+
+function scaleY(value){
+
+    return value * canvas.height / GAME_HEIGHT;
+
+}
+
+
+
 
 
 
@@ -48,23 +126,33 @@ baseImage.src = "images/base.png";
 
 let bird = {
 
+
 x:80,
+
 
 y:250,
 
+
 width:50,
+
 
 height:40,
 
+
 velocity:0,
 
+
 rotation:0
+
 
 };
 
 
 
+
+
 const gravity = 0.25;
+
 
 const jumpForce = -6;
 
@@ -72,17 +160,23 @@ const jumpForce = -6;
 
 
 
-// ================= JEU =================
+
+
+// ================= VARIABLES JEU =================
 
 
 let pipes = [];
 
 let coins = [];
 
+
 let score = 0;
 
 
-let bestScore = localStorage.getItem("best") || 0;
+let bestScore =
+localStorage.getItem("best")
+|| 0;
+
 
 
 let gameOver = false;
@@ -97,23 +191,34 @@ let speed = 2;
 
 
 
-// ================= JOUR NUIT =================
+
+// ================= JOUR / NUIT =================
 
 
 let isNight = false;
+
 
 let timeCounter = 0;
 
 
 
 
-// ================= BASE =================
+
+
+// ================= SOL =================
 
 
 let baseX = 0;
 
+
 let baseY = 560;
 
+
+
+
+
+
+// ================= PIECES =================
 
 
 let coinRotation = 0;
@@ -128,25 +233,28 @@ let coinRotation = 0;
 function createPipe(){
 
 
-let topHeight = Math.random()*250 + 50;
+    let topHeight =
+    Math.random()*250 + 50;
 
 
-pipes.push({
 
-x:canvas.width,
+    pipes.push({
 
-width:70,
+        x:GAME_WIDTH,
 
-topHeight:topHeight,
+        width:70,
 
-gap:200,
+        topHeight:topHeight,
 
-passed:false
+        gap:200,
 
-});
+        passed:false
+
+    });
 
 
 }
+
 
 
 
@@ -158,30 +266,26 @@ passed:false
 function createCoin(){
 
 
-coins.push({
+    coins.push({
 
-x:canvas.width + 50,
+        x:GAME_WIDTH + 50,
 
-y:Math.random()*350 + 80,
+        y:Math.random()*350 + 80,
 
-size:40
+        size:40
 
-});
+    });
 
 
 }
-
-
-
-
-
 // ================= UPDATE =================
 
 
 function update(){
 
 
-if(gameOver)return;
+if(gameOver) return;
+
 
 
 frame++;
@@ -189,9 +293,14 @@ frame++;
 
 
 
+// gravité oiseau
+
+
 bird.velocity += gravity;
 
+
 bird.y += bird.velocity;
+
 
 
 bird.rotation = bird.velocity * 0.05;
@@ -199,37 +308,64 @@ bird.rotation = bird.velocity * 0.05;
 
 
 
+
+
+// jour nuit
+
+
 timeCounter++;
 
 
 if(timeCounter > 600){
 
+
 isNight = !isNight;
 
+
 timeCounter = 0;
+
 
 }
 
 
 
+
+
+
+// création tuyaux
 
 
 if(frame % 100 === 0){
 
+
 createPipe();
+
 
 }
 
+
+
+
+
+
+// création pièces
 
 
 if(frame % 150 === 0){
 
+
 createCoin();
+
 
 }
 
 
 
+
+
+
+
+// déplacement tuyaux
 
 
 pipes.forEach((pipe,index)=>{
@@ -239,30 +375,46 @@ pipe.x -= speed;
 
 
 
+
+// collision
+
+
 if(
+
 
 bird.x < pipe.x + pipe.width &&
 
+
 bird.x + bird.width > pipe.x &&
+
 
 (
 
+
 bird.y < pipe.topHeight ||
+
 
 bird.y + bird.height >
 
 pipe.topHeight + pipe.gap
 
+
 )
+
 
 ){
 
-gameOver=true;
+
+gameOver = true;
+
 
 }
 
 
 
+
+
+// score
 
 
 if(
@@ -273,26 +425,43 @@ bird.x > pipe.x + pipe.width
 
 ){
 
-pipe.passed=true;
+
+pipe.passed = true;
+
 
 score++;
 
+
 }
 
 
 
 
-if(pipe.x + pipe.width <0){
+
+
+// suppression
+
+
+if(pipe.x + pipe.width < 0){
+
 
 pipes.splice(index,1);
 
+
 }
+
 
 
 });
 
 
 
+
+
+
+
+
+// déplacement pièces
 
 
 coins.forEach((coin,index)=>{
@@ -302,20 +471,30 @@ coin.x -= speed;
 
 
 
+
+
+// récupération pièce
+
+
 if(
+
 
 bird.x < coin.x + coin.size &&
 
+
 bird.x + bird.width > coin.x &&
+
 
 bird.y < coin.y + coin.size &&
 
+
 bird.y + bird.height > coin.y
+
 
 ){
 
 
-score +=5;
+score += 5;
 
 
 coins.splice(index,1);
@@ -325,11 +504,16 @@ coins.splice(index,1);
 
 
 
-if(coin.x <0){
+
+
+if(coin.x < 0){
+
 
 coins.splice(index,1);
 
+
 }
+
 
 
 });
@@ -339,25 +523,42 @@ coins.splice(index,1);
 
 
 
-if(bird.y + bird.height >= baseY){
 
-gameOver=true;
+// sol
+
+
+if(
+
+bird.y + bird.height >= baseY
+
+){
+
+
+gameOver = true;
+
 
 }
 
 
 
+
+
+
+// record
 
 
 if(score > bestScore){
 
 
-bestScore=score;
+bestScore = score;
 
 
 localStorage.setItem(
+
 "best",
+
 bestScore
+
 );
 
 
@@ -374,48 +575,67 @@ bestScore
 
 
 
-// ================= OISEAU =================
+
+// ================= DESSIN OISEAU =================
+
 
 
 function drawBird(){
 
 
+
 ctx.save();
+
 
 
 ctx.translate(
 
-bird.x + bird.width/2,
+scaleX(bird.x + bird.width/2),
 
-bird.y + bird.height/2
+scaleY(bird.y + bird.height/2)
 
 );
+
+
 
 
 ctx.rotate(bird.rotation);
 
 
 
+
+
 ctx.drawImage(
+
 
 birdImage,
 
--bird.width/2,
 
--bird.height/2,
+scaleX(-bird.width/2),
 
-bird.width,
 
-bird.height
+scaleY(-bird.height/2),
+
+
+scaleX(bird.width),
+
+
+scaleY(bird.height)
+
 
 );
+
+
 
 
 
 ctx.restore();
 
 
+
 }
+
+
 
 
 
@@ -428,45 +648,69 @@ ctx.restore();
 function drawPipes(){
 
 
+
 pipes.forEach(pipe=>{
 
 
+
+
+
 ctx.drawImage(
+
 
 pipeRed,
 
-pipe.x,
 
-pipe.topHeight-500,
+scaleX(pipe.x),
 
-pipe.width,
 
-500
+scaleY(pipe.topHeight - 500),
+
+
+scaleX(pipe.width),
+
+
+scaleY(500)
+
 
 );
+
+
+
+
+
 
 
 
 ctx.drawImage(
 
+
 pipeGreen,
 
-pipe.x,
 
-pipe.topHeight+pipe.gap,
+scaleX(pipe.x),
 
-pipe.width,
 
-500
+scaleY(pipe.topHeight + pipe.gap),
+
+
+scaleX(pipe.width),
+
+
+scaleY(500)
+
 
 );
+
 
 
 
 });
 
 
+
 }
+
 
 
 
@@ -477,27 +721,38 @@ pipe.width,
 // ================= PIECES =================
 
 
+
 function drawCoins(){
 
 
-coinRotation +=0.15;
+
+coinRotation += 0.15;
+
+
 
 
 
 coins.forEach(coin=>{
 
 
+
 ctx.save();
+
 
 
 
 ctx.translate(
 
-coin.x+coin.size/2,
 
-coin.y+coin.size/2
+scaleX(coin.x + coin.size/2),
+
+
+scaleY(coin.y + coin.size/2)
+
 
 );
+
+
 
 
 
@@ -505,26 +760,39 @@ ctx.rotate(coinRotation);
 
 
 
+
+
 ctx.drawImage(
+
 
 coinImage,
 
--coin.size/2,
 
--coin.size/2,
+scaleX(-coin.size/2),
 
-coin.size,
 
-coin.size
+scaleY(-coin.size/2),
+
+
+scaleX(coin.size),
+
+
+scaleY(coin.size)
+
 
 );
+
+
 
 
 
 ctx.restore();
 
 
+
+
 });
+
 
 
 }
@@ -534,52 +802,21 @@ ctx.restore();
 
 
 
-// ================= BASE =================
+// ================= SOL =================
 
 
 function drawBase(){
 
 
-baseX-=2;
 
-
-if(baseX <= -canvas.width){
-
-baseX=0;
-
-}
+baseX -= 2;
 
 
 
-ctx.drawImage(
-
-baseImage,
-
-baseX,
-
-baseY,
-
-canvas.width,
-
-60
-
-);
+if(baseX <= -GAME_WIDTH){
 
 
-
-ctx.drawImage(
-
-baseImage,
-
-baseX+canvas.width,
-
-baseY,
-
-canvas.width,
-
-60
-
-);
+baseX = 0;
 
 
 }
@@ -590,20 +827,70 @@ canvas.width,
 
 
 
+ctx.drawImage(
+
+
+baseImage,
+
+
+scaleX(baseX),
+
+
+scaleY(baseY),
+
+
+canvas.width,
+
+
+scaleY(60)
+
+
+);
+
+
+
+
+
+
+ctx.drawImage(
+
+
+baseImage,
+
+
+scaleX(baseX + GAME_WIDTH),
+
+
+scaleY(baseY),
+
+
+canvas.width,
+
+
+scaleY(60)
+
+
+);
+
+
+
+}
 // ================= SCORE =================
 
 
 function drawScore(){
 
 
-ctx.fillStyle="white";
+ctx.fillStyle = "white";
 
-ctx.font="25px Arial";
+
+ctx.font = "25px Arial";
+
 
 
 ctx.fillText(
 
-"Score : "+score,
+"Score : " + score,
 
 10,
 
@@ -615,7 +902,7 @@ ctx.fillText(
 
 ctx.fillText(
 
-"Record : "+bestScore,
+"Record : " + bestScore,
 
 10,
 
@@ -625,9 +912,12 @@ ctx.fillText(
 
 
 
+
+
 // signature
 
-ctx.font="18px Arial";
+
+ctx.font = "18px Arial";
 
 
 ctx.fillText(
@@ -636,9 +926,10 @@ creatorName,
 
 10,
 
-canvas.height-20
+canvas.height - 20
 
 );
+
 
 
 }
@@ -649,10 +940,13 @@ canvas.height-20
 
 
 
-// ================= DRAW =================
+
+// ================= AFFICHAGE =================
+
 
 
 function draw(){
+
 
 
 ctx.clearRect(
@@ -669,11 +963,19 @@ canvas.height
 
 
 
+
+
+
+// fond
+
+
 let bg = isNight ?
 
 nightBackground :
 
 dayBackground;
+
+
 
 
 
@@ -693,69 +995,142 @@ canvas.height
 
 
 
+
+
+
+
 drawPipes();
+
 
 drawCoins();
 
+
 drawBird();
 
+
 drawBase();
+
 
 drawScore();
 
 
 
+
+
+
+
+// GAME OVER
+
+
 if(gameOver){
 
 
-ctx.fillStyle="red";
 
-ctx.font="40px Arial";
+ctx.fillStyle = "red";
+
+
+ctx.font = "40px Arial";
+
 
 
 ctx.fillText(
 
 "GAME OVER",
 
-70,
+canvas.width/2 - 110,
 
-300
+canvas.height/2
 
 );
 
+
+
+
+
+ctx.fillStyle="white";
 
 
 ctx.font="20px Arial";
 
 
+
 ctx.fillText(
 
-"R pour rejouer",
+"Toucher pour rejouer",
 
-120,
+canvas.width/2 - 110,
 
-340
+canvas.height/2 + 40
 
 );
 
 
-}
-
-
 
 }
 
 
 
+}
 
 
 
 
 
-// ================= CONTROLES =================
 
 
-// clavier
+
+
+// ================= RESET JEU =================
+
+
+
+function restartGame(){
+
+
+
+bird.y = 250;
+
+
+bird.velocity = 0;
+
+
+
+pipes = [];
+
+
+coins = [];
+
+
+
+score = 0;
+
+
+
+frame = 0;
+
+
+
+speed = 2;
+
+
+
+gameOver = false;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+// ================= CONTROLES CLAVIER =================
+
+
 
 document.addEventListener(
 
@@ -764,43 +1139,58 @@ document.addEventListener(
 (e)=>{
 
 
-if(e.code==="Space" && !gameOver){
+
+if(e.code === "Space"){
+
+
+
+if(!gameOver){
+
+
 
 bird.velocity = jumpForce;
 
+
 }
-
-
-
-if(e.key.toLowerCase()==="r" && gameOver){
-
-
-bird.y=250;
-
-bird.velocity=0;
-
-pipes=[];
-
-coins=[];
-
-score=0;
-
-frame=0;
-
-gameOver=false;
 
 
 }
 
 
-});
+
+
+if(
+
+e.key.toLowerCase() === "r"
+
+&&
+
+gameOver
+
+){
+
+
+restartGame();
+
+
+}
+
+
+
+}
+
+);
 
 
 
 
 
 
-// ================= TACTILE =================
+
+
+
+// ================= CONTROLE TACTILE =================
+
 
 
 canvas.addEventListener(
@@ -814,23 +1204,52 @@ e.preventDefault();
 
 
 
-if(!gameOver){
+
+
+if(gameOver){
+
+
+
+restartGame();
+
+
+
+}
+
+else{
+
+
 
 bird.velocity = jumpForce;
+
+
 
 }
 
 
+
 },
 
-{passive:false}
+
+
+{
+
+passive:false
+
+}
 
 );
 
 
 
 
-// souris
+
+
+
+
+// ================= SOURIS =================
+
+
 
 canvas.addEventListener(
 
@@ -839,12 +1258,132 @@ canvas.addEventListener(
 ()=>{
 
 
-if(!gameOver){
 
-bird.velocity = jumpForce;
+if(gameOver){
+
+
+restartGame();
+
 
 }
 
+else{
+
+
+bird.velocity = jumpForce;
+
+
+}
+
+
+
+});
+// ================= BOUCLE DU JEU =================
+
+
+function gameLoop(){
+
+
+
+update();
+
+
+
+draw();
+
+
+
+
+requestAnimationFrame(gameLoop);
+
+
+
+}
+
+
+
+
+
+
+
+// ================= ADAPTATION POSITION =================
+
+
+
+function updatePosition(){
+
+
+
+if(bird.y < 0){
+
+
+
+bird.y = 0;
+
+
+
+}
+
+
+
+
+
+
+if(bird.y > GAME_HEIGHT){
+
+
+
+gameOver = true;
+
+
+
+}
+
+
+
+
+
+}
+
+
+
+
+
+
+
+
+// ================= LANCEMENT =================
+
+
+
+gameLoop();
+
+
+
+
+
+
+
+// ================= SUPPORT MOBILE =================
+
+
+
+document.body.addEventListener(
+
+"touchmove",
+
+(e)=>{
+
+
+e.preventDefault();
+
+
+},
+
+
+{
+
+passive:false
 
 }
 
@@ -856,22 +1395,8 @@ bird.velocity = jumpForce;
 
 
 
-// ================= LOOP =================
+console.log(
 
+"Flappy Bird - " + creatorName
 
-function gameLoop(){
-
-
-update();
-
-draw();
-
-
-requestAnimationFrame(gameLoop);
-
-
-}
-
-
-
-gameLoop();
+);
