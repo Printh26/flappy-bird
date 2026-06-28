@@ -5,6 +5,11 @@ canvas.width = 400;
 canvas.height = 600;
 
 
+// ================= CREATEUR =================
+
+const creatorName = "HARRY ARISTOTE CREATION";
+
+
 // ================= IMAGES =================
 
 
@@ -16,30 +21,24 @@ const nightBackground = new Image();
 nightBackground.src = "images/background_night.png";
 
 
-
 const birdImage = new Image();
 birdImage.src = "images/bird.png";
-
 
 
 const pipeGreen = new Image();
 pipeGreen.src = "images/pipe-green.png";
 
 
-
 const pipeRed = new Image();
 pipeRed.src = "images/pipe-red.png";
-
 
 
 const coinImage = new Image();
 coinImage.src = "images/coin.png";
 
 
-
 const baseImage = new Image();
 baseImage.src = "images/base.png";
-
 
 
 
@@ -49,25 +48,19 @@ baseImage.src = "images/base.png";
 
 let bird = {
 
-
 x:80,
 
 y:250,
-
 
 width:50,
 
 height:40,
 
-
 velocity:0,
-
 
 rotation:0
 
-
 };
-
 
 
 
@@ -86,16 +79,13 @@ let pipes = [];
 
 let coins = [];
 
-
 let score = 0;
 
 
 let bestScore = localStorage.getItem("best") || 0;
 
 
-
 let gameOver = false;
-
 
 
 let frame = 0;
@@ -112,9 +102,7 @@ let speed = 2;
 
 let isNight = false;
 
-
 let timeCounter = 0;
-
 
 
 
@@ -124,14 +112,8 @@ let timeCounter = 0;
 
 let baseX = 0;
 
-
 let baseY = 560;
 
-
-
-
-
-// ================= PIECE ROTATION =================
 
 
 let coinRotation = 0;
@@ -143,38 +125,28 @@ let coinRotation = 0;
 // ================= CREATION TUYAU =================
 
 
-
 function createPipe(){
 
 
 let topHeight = Math.random()*250 + 50;
 
 
-
 pipes.push({
-
 
 x:canvas.width,
 
-
 width:70,
-
 
 topHeight:topHeight,
 
-
 gap:200,
 
-
 passed:false
-
-
 
 });
 
 
 }
-
 
 
 
@@ -183,21 +155,16 @@ passed:false
 // ================= CREATION PIECE =================
 
 
-
 function createCoin(){
 
 
 coins.push({
 
-
 x:canvas.width + 50,
-
 
 y:Math.random()*350 + 80,
 
-
 size:40
-
 
 });
 
@@ -208,10 +175,7 @@ size:40
 
 
 
-
-
 // ================= UPDATE =================
-
 
 
 function update(){
@@ -220,141 +184,82 @@ function update(){
 if(gameOver)return;
 
 
-
 frame++;
 
 
 
 
-// attente départ
-
-if(frame > 60){
-
-
-
 bird.velocity += gravity;
 
-
 bird.y += bird.velocity;
-
 
 
 bird.rotation = bird.velocity * 0.05;
 
 
-}
-
-
-
-
-// jour nuit
 
 
 timeCounter++;
 
 
-
 if(timeCounter > 600){
-
 
 isNight = !isNight;
 
-
 timeCounter = 0;
-
 
 }
 
 
-
-
-
-
-// tuyaux
 
 
 
 if(frame % 100 === 0){
 
-
 createPipe();
 
-
 }
-
-
-
-
-
-
-// pièces
 
 
 
 if(frame % 150 === 0){
 
-
 createCoin();
-
 
 }
 
 
-
-
-
-
-
-// mouvement tuyaux
 
 
 
 pipes.forEach((pipe,index)=>{
 
 
-
 pipe.x -= speed;
 
 
 
-
-
-// collision
-
-
 if(
-
 
 bird.x < pipe.x + pipe.width &&
 
-
 bird.x + bird.width > pipe.x &&
-
 
 (
 
-
 bird.y < pipe.topHeight ||
-
-
 
 bird.y + bird.height >
 
 pipe.topHeight + pipe.gap
 
-
 )
-
 
 ){
 
-
-gameOver = true;
-
+gameOver=true;
 
 }
-
-
 
 
 
@@ -366,80 +271,51 @@ if(
 
 bird.x > pipe.x + pipe.width
 
-
 ){
 
-
-pipe.passed = true;
-
+pipe.passed=true;
 
 score++;
 
-
 }
 
 
 
 
-
-
-if(pipe.x + pipe.width < 0){
-
+if(pipe.x + pipe.width <0){
 
 pipes.splice(index,1);
 
-
 }
-
 
 
 });
 
 
-
-
-
-
-
-
-
-// gestion pièces
 
 
 
 coins.forEach((coin,index)=>{
 
 
-
 coin.x -= speed;
-
-
 
 
 
 if(
 
-
 bird.x < coin.x + coin.size &&
-
 
 bird.x + bird.width > coin.x &&
 
-
-
 bird.y < coin.y + coin.size &&
 
-
 bird.y + bird.height > coin.y
-
-
 
 ){
 
 
-
-score += 5;
-
+score +=5;
 
 
 coins.splice(index,1);
@@ -449,16 +325,11 @@ coins.splice(index,1);
 
 
 
-
-
-if(coin.x < 0){
-
+if(coin.x <0){
 
 coins.splice(index,1);
 
-
 }
-
 
 
 });
@@ -468,38 +339,25 @@ coins.splice(index,1);
 
 
 
-
-
-// sol
-
-
 if(bird.y + bird.height >= baseY){
 
-
-gameOver = true;
-
+gameOver=true;
 
 }
 
 
 
-
-
-// meilleur score
 
 
 if(score > bestScore){
 
 
-bestScore = score;
+bestScore=score;
 
 
 localStorage.setItem(
-
 "best",
-
 bestScore
-
 );
 
 
@@ -516,29 +374,22 @@ bestScore
 
 
 
-// ================= DESSIN OISEAU =================
-
+// ================= OISEAU =================
 
 
 function drawBird(){
 
 
-
 ctx.save();
-
 
 
 ctx.translate(
 
-
 bird.x + bird.width/2,
-
 
 bird.y + bird.height/2
 
-
 );
-
 
 
 ctx.rotate(bird.rotation);
@@ -547,21 +398,15 @@ ctx.rotate(bird.rotation);
 
 ctx.drawImage(
 
-
 birdImage,
-
 
 -bird.width/2,
 
-
 -bird.height/2,
-
 
 bird.width,
 
-
 bird.height
-
 
 );
 
@@ -577,11 +422,7 @@ ctx.restore();
 
 
 
-
-
-
 // ================= TUYAUX =================
-
 
 
 function drawPipes(){
@@ -590,56 +431,39 @@ function drawPipes(){
 pipes.forEach(pipe=>{
 
 
-
 ctx.drawImage(
-
 
 pipeRed,
 
-
 pipe.x,
 
-
-pipe.topHeight - 500,
-
+pipe.topHeight-500,
 
 pipe.width,
 
-
 500
 
-
 );
-
-
 
 
 
 ctx.drawImage(
 
-
 pipeGreen,
-
 
 pipe.x,
 
-
-pipe.topHeight + pipe.gap,
-
+pipe.topHeight+pipe.gap,
 
 pipe.width,
 
-
 500
 
-
 );
-
 
 
 
 });
-
 
 
 }
@@ -650,23 +474,17 @@ pipe.width,
 
 
 
-
-
-
 // ================= PIECES =================
-
 
 
 function drawCoins(){
 
 
-
-coinRotation += 0.15;
+coinRotation +=0.15;
 
 
 
 coins.forEach(coin=>{
-
 
 
 ctx.save();
@@ -675,12 +493,9 @@ ctx.save();
 
 ctx.translate(
 
+coin.x+coin.size/2,
 
-coin.x + coin.size/2,
-
-
-coin.y + coin.size/2
-
+coin.y+coin.size/2
 
 );
 
@@ -692,21 +507,15 @@ ctx.rotate(coinRotation);
 
 ctx.drawImage(
 
-
 coinImage,
 
-
 -coin.size/2,
 
-
 -coin.size/2,
-
 
 coin.size,
 
-
 coin.size
-
 
 );
 
@@ -715,15 +524,10 @@ coin.size
 ctx.restore();
 
 
-
 });
 
 
-
 }
-
-
-
 
 
 
@@ -733,20 +537,15 @@ ctx.restore();
 // ================= BASE =================
 
 
-
 function drawBase(){
 
 
-
-baseX -= 2;
-
+baseX-=2;
 
 
 if(baseX <= -canvas.width){
 
-
-baseX = 0;
-
+baseX=0;
 
 }
 
@@ -754,53 +553,36 @@ baseX = 0;
 
 ctx.drawImage(
 
-
 baseImage,
-
 
 baseX,
 
-
 baseY,
-
 
 canvas.width,
 
-
 60
 
-
 );
-
 
 
 
 ctx.drawImage(
 
-
 baseImage,
 
-
-baseX + canvas.width,
-
+baseX+canvas.width,
 
 baseY,
 
-
 canvas.width,
 
-
 60
-
 
 );
 
 
-
 }
-
-
-
 
 
 
@@ -811,52 +593,55 @@ canvas.width,
 // ================= SCORE =================
 
 
-
 function drawScore(){
 
 
 ctx.fillStyle="white";
 
-
 ctx.font="25px Arial";
 
 
-
 ctx.fillText(
 
-
-"Score : " + score,
-
+"Score : "+score,
 
 10,
-
 
 40
 
-
 );
 
 
 
 ctx.fillText(
 
-
-"Record : " + bestScore,
-
+"Record : "+bestScore,
 
 10,
 
-
 70
-
 
 );
 
 
 
+// signature
+
+ctx.font="18px Arial";
+
+
+ctx.fillText(
+
+creatorName,
+
+10,
+
+canvas.height-20
+
+);
+
+
 }
-
-
 
 
 
@@ -867,108 +652,74 @@ ctx.fillText(
 // ================= DRAW =================
 
 
-
 function draw(){
-
 
 
 ctx.clearRect(
 
-
 0,
 
-
 0,
-
 
 canvas.width,
 
-
 canvas.height
 
-
 );
-
-
 
 
 
 let bg = isNight ?
 
-
 nightBackground :
-
 
 dayBackground;
 
 
 
-
 ctx.drawImage(
-
 
 bg,
 
-
 0,
 
-
 0,
-
 
 canvas.width,
 
-
 canvas.height
-
 
 );
 
 
 
-
-
 drawPipes();
-
 
 drawCoins();
 
-
 drawBird();
-
 
 drawBase();
 
-
 drawScore();
-
-
-
 
 
 
 if(gameOver){
 
 
-
 ctx.fillStyle="red";
-
 
 ctx.font="40px Arial";
 
 
-
 ctx.fillText(
-
 
 "GAME OVER",
 
-
 70,
 
-
 300
-
 
 );
 
@@ -979,55 +730,20 @@ ctx.font="20px Arial";
 
 ctx.fillText(
 
-
 "R pour rejouer",
-
 
 120,
 
-
 340
-
 
 );
 
 
-
 }
 
 
 
 }
-
-
-
-
-
-
-
-
-
-
-// ================= LOOP =================
-
-
-
-function gameLoop(){
-
-
-
-update();
-
-
-draw();
-
-
-
-requestAnimationFrame(gameLoop);
-
-
-}
-
 
 
 
@@ -1039,65 +755,122 @@ requestAnimationFrame(gameLoop);
 // ================= CONTROLES =================
 
 
+// clavier
 
-document.addEventListener("keydown",(e)=>{
+document.addEventListener(
 
+"keydown",
+
+(e)=>{
 
 
 if(e.code==="Space" && !gameOver){
 
-
 bird.velocity = jumpForce;
 
-
 }
-
-
-
 
 
 
 if(e.key.toLowerCase()==="r" && gameOver){
 
 
+bird.y=250;
 
-bird.y = 250;
-
-
-bird.velocity = 0;
-
-
+bird.velocity=0;
 
 pipes=[];
 
-
 coins=[];
-
-
 
 score=0;
 
-
-
 frame=0;
 
-
-
-speed=3;
-
-
-
 gameOver=false;
-
 
 
 }
 
 
-
 });
 
 
+
+
+
+
+// ================= TACTILE =================
+
+
+canvas.addEventListener(
+
+"touchstart",
+
+(e)=>{
+
+
+e.preventDefault();
+
+
+
+if(!gameOver){
+
+bird.velocity = jumpForce;
+
+}
+
+
+},
+
+{passive:false}
+
+);
+
+
+
+
+// souris
+
+canvas.addEventListener(
+
+"mousedown",
+
+()=>{
+
+
+if(!gameOver){
+
+bird.velocity = jumpForce;
+
+}
+
+
+}
+
+);
+
+
+
+
+
+
+
+// ================= LOOP =================
+
+
+function gameLoop(){
+
+
+update();
+
+draw();
+
+
+requestAnimationFrame(gameLoop);
+
+
+}
 
 
 
