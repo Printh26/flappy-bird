@@ -52,7 +52,7 @@ resizeCanvas
 // ================= CREATEUR =================
 
 
-const creatorName = "HARRY_ARISTOTE CREATION";
+const creatorName = "NHA CREATION";
 
 
 
@@ -913,7 +913,6 @@ ctx.fillText(
 
 
 
-
 // signature
 
 
@@ -1056,9 +1055,9 @@ ctx.font="20px Arial";
 
 ctx.fillText(
 
-"Toucher pour rejouer",
+"TOUCHER POUR REJOUER",
 
-canvas.width/2 - 110,
+canvas.width/2 - 130,
 
 canvas.height/2 + 40
 
