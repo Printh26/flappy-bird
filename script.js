@@ -94,6 +94,197 @@ const baseImage = new Image();
 baseImage.src = "images/base.png";
 
 
+// ================= SONS =================
+
+
+let audioContext = null;
+
+let backgroundMusic = null;
+
+
+function initAudio(){
+
+    if(audioContext) return;
+
+    audioContext = new (
+        window.AudioContext ||
+        window.webkitAudioContext
+    )();
+
+}
+
+
+function startBackgroundMusic(){
+
+    if(!audioContext || backgroundMusic) return;
+
+    const musicGain = audioContext.createGain();
+    musicGain.gain.value = 0.025;
+    musicGain.connect(audioContext.destination);
+
+    const bass = audioContext.createOscillator();
+    bass.type = "sine";
+    bass.frequency.value = 110;
+
+    const harmony = audioContext.createOscillator();
+    harmony.type = "triangle";
+    harmony.frequency.value = 220;
+
+    bass.connect(musicGain);
+    harmony.connect(musicGain);
+
+    bass.start();
+    harmony.start();
+
+    const melodyNotes = [440, 523, 659, 523, 392, 494, 587, 494];
+    let melodyIndex = 0;
+
+    function playMusicNote(){
+
+        if(!backgroundMusic) return;
+
+        const now = audioContext.currentTime;
+        const noteGain = audioContext.createGain();
+        const note = audioContext.createOscillator();
+
+        note.type = "square";
+        note.frequency.value = melodyNotes[melodyIndex];
+
+        noteGain.gain.setValueAtTime(0, now);
+        noteGain.gain.linearRampToValueAtTime(0.045, now + 0.02);
+        noteGain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+
+        note.connect(noteGain);
+        noteGain.connect(audioContext.destination);
+
+        note.start(now);
+        note.stop(now + 0.24);
+
+        melodyIndex = (melodyIndex + 1) % melodyNotes.length;
+
+    }
+
+    backgroundMusic = {
+        bass,
+        harmony,
+        gain:musicGain,
+        melodyInterval:setInterval(playMusicNote, 320)
+    };
+
+    playMusicNote();
+
+}
+
+
+function stopBackgroundMusic(){
+
+    if(!backgroundMusic) return;
+
+    const now = audioContext.currentTime;
+
+    backgroundMusic.gain.gain.cancelScheduledValues(now);
+    backgroundMusic.gain.gain.setValueAtTime(
+        backgroundMusic.gain.gain.value,
+        now
+    );
+    backgroundMusic.gain.gain.linearRampToValueAtTime(0, now + 0.25);
+
+    backgroundMusic.bass.stop(now + 0.3);
+    backgroundMusic.harmony.stop(now + 0.3);
+    clearInterval(backgroundMusic.melodyInterval);
+
+    backgroundMusic = null;
+
+}
+
+
+function playCoinSound(){
+
+    if(!audioContext) return;
+
+    const now = audioContext.currentTime;
+    const coinGain = audioContext.createGain();
+    const firstTone = audioContext.createOscillator();
+    const secondTone = audioContext.createOscillator();
+
+    coinGain.gain.setValueAtTime(0, now);
+    coinGain.gain.linearRampToValueAtTime(0.18, now + 0.01);
+    coinGain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+    coinGain.connect(audioContext.destination);
+
+    firstTone.type = "square";
+    firstTone.frequency.setValueAtTime(880, now);
+    firstTone.frequency.exponentialRampToValueAtTime(1320, now + 0.12);
+
+    secondTone.type = "triangle";
+    secondTone.frequency.setValueAtTime(1760, now + 0.08);
+
+    firstTone.connect(coinGain);
+    secondTone.connect(coinGain);
+
+    firstTone.start(now);
+    secondTone.start(now + 0.08);
+
+    firstTone.stop(now + 0.22);
+    secondTone.stop(now + 0.35);
+
+}
+
+
+function playGameOverSound(){
+
+    if(!audioContext) return;
+
+    const now = audioContext.currentTime;
+    const gameOverGain = audioContext.createGain();
+    const tone = audioContext.createOscillator();
+
+    gameOverGain.gain.setValueAtTime(0, now);
+    gameOverGain.gain.linearRampToValueAtTime(0.24, now + 0.02);
+    gameOverGain.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
+    gameOverGain.connect(audioContext.destination);
+
+    tone.type = "sawtooth";
+    tone.frequency.setValueAtTime(260, now);
+    tone.frequency.exponentialRampToValueAtTime(80, now + 0.7);
+    tone.connect(gameOverGain);
+
+    tone.start(now);
+    tone.stop(now + 0.8);
+
+}
+
+
+function triggerGameOver(){
+
+    if(gameOver) return;
+
+    gameOver = true;
+    stopBackgroundMusic();
+    playGameOverSound();
+
+}
+
+
+function unlockAudio(){
+
+    initAudio();
+
+    if(audioContext && audioContext.state === "suspended"){
+
+        audioContext.resume();
+
+    }
+
+    if(!gameOver){
+
+        startBackgroundMusic();
+
+    }
+
+}
+
+
 
 
 
@@ -405,7 +596,7 @@ pipe.topHeight + pipe.gap
 ){
 
 
-gameOver = true;
+triggerGameOver();
 
 
 }
@@ -494,6 +685,9 @@ bird.y + bird.height > coin.y
 ){
 
 
+playCoinSound();
+
+
 score += 5;
 
 
@@ -534,7 +728,7 @@ bird.y + bird.height >= baseY
 ){
 
 
-gameOver = true;
+triggerGameOver();
 
 
 }
@@ -1116,6 +1310,13 @@ speed = 2;
 gameOver = false;
 
 
+if(audioContext){
+
+    startBackgroundMusic();
+
+}
+
+
 
 }
 
@@ -1136,6 +1337,9 @@ document.addEventListener(
 "keydown",
 
 (e)=>{
+
+
+unlockAudio();
 
 
 
@@ -1202,6 +1406,9 @@ canvas.addEventListener(
 e.preventDefault();
 
 
+unlockAudio();
+
+
 
 
 
@@ -1255,6 +1462,9 @@ canvas.addEventListener(
 "mousedown",
 
 ()=>{
+
+
+unlockAudio();
 
 
 
@@ -1332,7 +1542,7 @@ if(bird.y > GAME_HEIGHT){
 
 
 
-gameOver = true;
+triggerGameOver();
 
 
 
