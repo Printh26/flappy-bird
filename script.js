@@ -52,7 +52,7 @@ resizeCanvas
 // ================= CREATEUR =================
 
 
-const creatorName = "HARRY_ARISTOTE CREATION";
+const creatorName = "harry Aristote CREATION";
 
 
 
@@ -101,6 +101,12 @@ let audioContext = null;
 
 let backgroundMusic = null;
 
+let musicEnabled = true;
+
+let soundEffectsEnabled = true;
+
+let vibrationsEnabled = true;
+
 
 function initAudio(){
 
@@ -116,7 +122,7 @@ function initAudio(){
 
 function startBackgroundMusic(){
 
-    if(!audioContext || backgroundMusic) return;
+    if(!musicEnabled || !audioContext || backgroundMusic) return;
 
     const musicGain = audioContext.createGain();
     musicGain.gain.value = 0.025;
@@ -200,7 +206,7 @@ function stopBackgroundMusic(){
 
 function playCoinSound(){
 
-    if(!audioContext) return;
+    if(!soundEffectsEnabled || !audioContext) return;
 
     const now = audioContext.currentTime;
     const coinGain = audioContext.createGain();
@@ -233,7 +239,7 @@ function playCoinSound(){
 
 function playGameOverSound(){
 
-    if(!audioContext) return;
+    if(!soundEffectsEnabled || !audioContext) return;
 
     const now = audioContext.currentTime;
     const gameOverGain = audioContext.createGain();
@@ -255,13 +261,26 @@ function playGameOverSound(){
 }
 
 
+function vibrateDevice(duration){
+
+    if(vibrationsEnabled && navigator.vibrate){
+
+        navigator.vibrate(duration);
+
+    }
+
+}
+
+
 function triggerGameOver(){
 
     if(gameOver) return;
 
     gameOver = true;
+    gameState = "gameOver";
     stopBackgroundMusic();
     playGameOverSound();
+    vibrateDevice(180);
 
 }
 
@@ -276,7 +295,7 @@ function unlockAudio(){
 
     }
 
-    if(!gameOver){
+    if(gameState === "playing"){
 
         startBackgroundMusic();
 
@@ -373,10 +392,40 @@ localStorage.getItem("best")
 let gameOver = false;
 
 
+let gameState = "menu";
+
+
 let frame = 0;
 
 
 let speed = 2;
+
+
+let difficulty = "normal";
+
+const difficulties = {
+    facile:{
+        label:"FACILE",
+        speed:1.7,
+        gap:230,
+        pipeEvery:120,
+        coinEvery:150
+    },
+    normal:{
+        label:"NORMAL",
+        speed:2,
+        gap:200,
+        pipeEvery:100,
+        coinEvery:150
+    },
+    difficile:{
+        label:"DIFFICILE",
+        speed:2.6,
+        gap:170,
+        pipeEvery:85,
+        coinEvery:135
+    }
+};
 
 
 
@@ -415,6 +464,318 @@ let baseY = 560;
 let coinRotation = 0;
 
 
+// ================= MENU =================
+
+
+let menuButtons = [];
+
+
+function drawMenuButton(id,label,y,color){
+
+    const width = Math.min(canvas.width * 0.76, 300);
+    const height = 48;
+    const x = canvas.width/2 - width/2;
+
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, width, height);
+
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(x, y, width, height);
+
+    ctx.fillStyle = "white";
+    ctx.font = "bold 20px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText(label, canvas.width/2, y + 31);
+
+    menuButtons.push({
+        id,
+        x,
+        y,
+        width,
+        height
+    });
+
+}
+
+
+function drawPauseButton(){
+
+    const width = 94;
+    const height = 38;
+    const x = canvas.width - width - 12;
+    const y = 12;
+
+    ctx.fillStyle = "#222";
+    ctx.fillRect(x, y, width, height);
+
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, y, width, height);
+
+    ctx.fillStyle = "white";
+    ctx.font = "bold 16px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("PAUSE", x + width/2, y + 25);
+
+    menuButtons.push({
+        id:"pause",
+        x,
+        y,
+        width,
+        height
+    });
+
+    ctx.textAlign = "left";
+
+}
+
+
+function drawMenu(){
+
+    menuButtons = [];
+
+    ctx.fillStyle = "rgba(0,0,0,0.25)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "white";
+    ctx.font = "bold 38px Arial";
+    ctx.fillText("🐦 FLAPPY BIRD", canvas.width/2, canvas.height * 0.18);
+
+    ctx.drawImage(
+        birdImage,
+        canvas.width/2 - 32,
+        canvas.height * 0.21,
+        64,
+        50
+    );
+
+    ctx.font = "18px Arial";
+    ctx.fillText(creatorName, canvas.width/2, canvas.height * 0.35);
+
+    const startY = canvas.height * 0.43;
+
+    drawMenuButton("play", "▶ JOUER", startY, "#22a447");
+    drawMenuButton("settings", "⚙ PARAMÈTRES", startY + 66, "#2d7dd2");
+    drawMenuButton("best", "🏆 MEILLEUR SCORE", startY + 132, "#d18b00");
+
+    ctx.textAlign = "left";
+
+}
+
+
+function drawSettings(){
+
+    menuButtons = [];
+
+    ctx.fillStyle = "rgba(0,0,0,0.35)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "white";
+    ctx.font = "bold 34px Arial";
+    ctx.fillText("PARAMÈTRES", canvas.width/2, canvas.height * 0.22);
+
+    const startY = canvas.height * 0.25;
+
+    drawMenuButton("toggleMusic", "MUSIQUE " + (musicEnabled ? "ON" : "OFF"), startY, musicEnabled ? "#22a447" : "#777");
+    drawMenuButton("toggleEffects", "EFFETS " + (soundEffectsEnabled ? "ON" : "OFF"), startY + 50, soundEffectsEnabled ? "#22a447" : "#777");
+    drawMenuButton("toggleVibrations", "VIBRATIONS " + (vibrationsEnabled ? "ON" : "OFF"), startY + 100, vibrationsEnabled ? "#22a447" : "#777");
+
+    ctx.font = "bold 18px Arial";
+    ctx.fillText("DIFFICULTÉ", canvas.width/2, startY + 160);
+
+    drawMenuButton("difficultyFacile", "FACILE", startY + 174, difficulty === "facile" ? "#d18b00" : "#444");
+    drawMenuButton("difficultyNormal", "NORMAL", startY + 224, difficulty === "normal" ? "#d18b00" : "#444");
+    drawMenuButton("difficultyDifficile", "DIFFICILE", startY + 274, difficulty === "difficile" ? "#d18b00" : "#444");
+
+    drawMenuButton("back", "RETOUR MENU", startY + 326, "#2d7dd2");
+
+    ctx.textAlign = "left";
+
+}
+
+
+function drawPauseScreen(){
+
+    menuButtons = [];
+
+    ctx.fillStyle = "rgba(0,0,0,0.45)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "white";
+    ctx.font = "bold 38px Arial";
+    ctx.fillText("PAUSE", canvas.width/2, canvas.height * 0.25);
+
+    const startY = canvas.height * 0.38;
+
+    drawMenuButton("resume", "▶ REPRENDRE", startY, "#22a447");
+    drawMenuButton("settings", "⚙ PARAMÈTRES", startY + 66, "#2d7dd2");
+    drawMenuButton("menu", "MENU", startY + 132, "#444");
+
+    ctx.textAlign = "left";
+
+}
+
+
+function drawBestScoreScreen(){
+
+    menuButtons = [];
+
+    ctx.fillStyle = "rgba(0,0,0,0.35)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.textAlign = "center";
+    ctx.fillStyle = "white";
+    ctx.font = "bold 32px Arial";
+    ctx.fillText("MEILLEUR SCORE", canvas.width/2, canvas.height * 0.24);
+
+    ctx.font = "bold 54px Arial";
+    ctx.fillText(bestScore, canvas.width/2, canvas.height * 0.42);
+
+    drawMenuButton("back", "RETOUR", canvas.height * 0.58, "#444");
+
+    ctx.textAlign = "left";
+
+}
+
+
+function getPointerPosition(e){
+
+    const rect = canvas.getBoundingClientRect();
+    const pointer = e.touches ? e.touches[0] : e;
+
+    return {
+        x:(pointer.clientX - rect.left) * canvas.width / rect.width,
+        y:(pointer.clientY - rect.top) * canvas.height / rect.height
+    };
+
+}
+
+
+function handleMenuPointer(e){
+
+    const position = getPointerPosition(e);
+    const button = menuButtons.find(item =>
+        position.x >= item.x &&
+        position.x <= item.x + item.width &&
+        position.y >= item.y &&
+        position.y <= item.y + item.height
+    );
+
+    if(!button) return false;
+
+    if(button.id === "play"){
+
+        restartGame();
+        unlockAudio();
+
+    }
+
+    if(button.id === "pause"){
+
+        gameState = "paused";
+        stopBackgroundMusic();
+
+    }
+
+
+    if(button.id === "resume"){
+
+        gameState = "playing";
+        startBackgroundMusic();
+
+    }
+
+
+    if(button.id === "settings"){
+
+        gameState = "settings";
+        stopBackgroundMusic();
+
+    }
+
+    if(button.id === "best"){
+
+        gameState = "bestScore";
+        stopBackgroundMusic();
+
+    }
+
+    if(button.id === "back"){
+
+        gameState = "menu";
+        stopBackgroundMusic();
+
+    }
+
+    if(button.id === "menu"){
+
+        gameState = "menu";
+        gameOver = false;
+        stopBackgroundMusic();
+
+    }
+
+    if(button.id === "toggleMusic"){
+
+        musicEnabled = !musicEnabled;
+
+        if(!musicEnabled){
+
+            stopBackgroundMusic();
+
+        }
+
+        else if(gameState === "playing"){
+
+            startBackgroundMusic();
+
+        }
+
+    }
+
+    if(button.id === "toggleEffects"){
+
+        soundEffectsEnabled = !soundEffectsEnabled;
+
+    }
+
+    if(button.id === "toggleVibrations"){
+
+        vibrationsEnabled = !vibrationsEnabled;
+        vibrateDevice(40);
+
+    }
+
+    if(button.id === "difficultyFacile"){
+
+        difficulty = "facile";
+        speed = difficulties[difficulty].speed;
+
+    }
+
+    if(button.id === "difficultyNormal"){
+
+        difficulty = "normal";
+        speed = difficulties[difficulty].speed;
+
+    }
+
+    if(button.id === "difficultyDifficile"){
+
+        difficulty = "difficile";
+        speed = difficulties[difficulty].speed;
+
+    }
+
+    return true;
+
+}
+
+
 
 
 
@@ -427,6 +788,8 @@ function createPipe(){
     let topHeight =
     Math.random()*250 + 50;
 
+    const difficultyConfig = difficulties[difficulty];
+
 
 
     pipes.push({
@@ -437,7 +800,7 @@ function createPipe(){
 
         topHeight:topHeight,
 
-        gap:200,
+        gap:difficultyConfig.gap,
 
         passed:false
 
@@ -475,7 +838,7 @@ function createCoin(){
 function update(){
 
 
-if(gameOver) return;
+if(gameState !== "playing") return;
 
 
 
@@ -526,7 +889,7 @@ timeCounter = 0;
 // création tuyaux
 
 
-if(frame % 100 === 0){
+if(frame % difficulties[difficulty].pipeEvery === 0){
 
 
 createPipe();
@@ -542,7 +905,7 @@ createPipe();
 // création pièces
 
 
-if(frame % 150 === 0){
+if(frame % difficulties[difficulty].coinEvery === 0){
 
 
 createCoin();
@@ -686,6 +1049,8 @@ bird.y + bird.height > coin.y
 
 
 playCoinSound();
+
+vibrateDevice(35);
 
 
 score += 5;
@@ -920,7 +1285,11 @@ function drawCoins(){
 
 
 
+if(gameState === "playing"){
+
 coinRotation += 0.15;
+
+}
 
 
 
@@ -1003,7 +1372,11 @@ function drawBase(){
 
 
 
-baseX -= 2;
+if(gameState === "playing"){
+
+baseX -= speed;
+
+}
 
 
 
@@ -1206,6 +1579,51 @@ drawBase();
 
 drawScore();
 
+menuButtons = [];
+
+
+if(gameState === "playing"){
+
+drawPauseButton();
+
+}
+
+
+if(gameState === "menu"){
+
+drawMenu();
+
+return;
+
+}
+
+
+if(gameState === "settings"){
+
+drawSettings();
+
+return;
+
+}
+
+
+if(gameState === "bestScore"){
+
+drawBestScoreScreen();
+
+return;
+
+}
+
+
+if(gameState === "paused"){
+
+drawPauseScreen();
+
+return;
+
+}
+
 
 
 
@@ -1257,6 +1675,9 @@ canvas.height/2 + 40
 
 );
 
+drawMenuButton("play", "▶ REJOUER", canvas.height/2 + 74, "#22a447");
+drawMenuButton("menu", "MENU", canvas.height/2 + 136, "#444");
+
 
 
 }
@@ -1303,11 +1724,14 @@ frame = 0;
 
 
 
-speed = 2;
+speed = difficulties[difficulty].speed;
 
 
 
 gameOver = false;
+
+
+gameState = "playing";
 
 
 if(audioContext){
@@ -1339,42 +1763,54 @@ document.addEventListener(
 (e)=>{
 
 
-unlockAudio();
-
-
-
-if(e.code === "Space"){
-
-
-
-if(!gameOver){
-
-
-
-bird.velocity = jumpForce;
-
-
-}
-
-
-}
-
-
-
-
-if(
-
-e.key.toLowerCase() === "r"
-
-&&
-
-gameOver
-
-){
-
+if(gameState === "menu" && (e.code === "Space" || e.code === "Enter")){
 
 restartGame();
+unlockAudio();
+return;
 
+}
+
+
+if((gameState === "settings" || gameState === "bestScore") && e.code === "Escape"){
+
+gameState = "menu";
+return;
+
+}
+
+
+if(gameState === "playing" && (e.code === "KeyP" || e.code === "Escape")){
+
+gameState = "paused";
+stopBackgroundMusic();
+return;
+
+}
+
+
+if(gameState === "paused" && (e.code === "KeyP" || e.code === "Escape" || e.code === "Space")){
+
+gameState = "playing";
+unlockAudio();
+return;
+
+}
+
+
+if(gameState === "gameOver" && (e.code === "Space" || e.key.toLowerCase() === "r")){
+
+restartGame();
+unlockAudio();
+return;
+
+}
+
+
+if(gameState === "playing" && e.code === "Space"){
+
+unlockAudio();
+bird.velocity = jumpForce;
 
 }
 
@@ -1406,25 +1842,33 @@ canvas.addEventListener(
 e.preventDefault();
 
 
-unlockAudio();
+if(gameState === "menu" || gameState === "settings" || gameState === "bestScore" || gameState === "paused"){
+
+handleMenuPointer(e);
+return;
+
+}
 
 
+if(gameState === "gameOver"){
 
-
-
-if(gameOver){
+if(handleMenuPointer(e)) return;
 
 
 
 restartGame();
+unlockAudio();
 
 
 
 }
 
-else{
+else if(gameState === "playing"){
+
+if(handleMenuPointer(e)) return;
 
 
+unlockAudio();
 
 bird.velocity = jumpForce;
 
@@ -1461,24 +1905,34 @@ canvas.addEventListener(
 
 "mousedown",
 
-()=>{
+(e)=>{
 
 
-unlockAudio();
+if(gameState === "menu" || gameState === "settings" || gameState === "bestScore" || gameState === "paused"){
+
+handleMenuPointer(e);
+return;
+
+}
 
 
+if(gameState === "gameOver"){
 
-if(gameOver){
+if(handleMenuPointer(e)) return;
 
 
 restartGame();
+unlockAudio();
 
 
 }
 
-else{
+else if(gameState === "playing"){
+
+if(handleMenuPointer(e)) return;
 
 
+unlockAudio();
 bird.velocity = jumpForce;
 
 
